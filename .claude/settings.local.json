@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(test:*)",
+      "Bash(cmake --build:*)",
+      "Bash(cmd /c \"cd /d c:\\\\apps\\\\sacrament_graphic_cam && cl /EHsc /nologo test_connect.cpp strmiids.lib ole32.lib quartz.lib\")",
+      "Bash(where:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

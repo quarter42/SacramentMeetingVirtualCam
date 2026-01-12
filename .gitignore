@@ -1,0 +1,71 @@
+# Build directories
+build/
+bin/
+lib/
+out/
+x64/
+x86/
+Release/
+Debug/
+
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake
+!CMakeLists.txt
+CTestTestfile.cmake
+_deps/
+
+# Compiled files
+*.exe
+*.dll
+*.lib
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.idb
+*.log
+*.tlog
+
+# Allow the installer executable (we'll add it as a release)
+!SacramentVirtualCamera_Setup.exe
+
+# Icon file (user should add their own)
+src/app.ico
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# DirectShow base classes build artifacts
+external/DirectShow/BaseClasses/*.obj
+external/DirectShow/BaseClasses/*.lib
+external/DirectShow/BaseClasses/x64/
+external/DirectShow/BaseClasses/Release/
+external/DirectShow/BaseClasses/Debug/
+
+# Test files
+test_*.exe
+set_image.exe
+
+# Backup files
+*.bak
+*.backup

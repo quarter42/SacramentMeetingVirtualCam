@@ -1,0 +1,156 @@
+; Sacrament Virtual Camera Installer Script
+; NSIS (Nullsoft Scriptable Install System)
+
+!define PRODUCT_NAME "Sacrament Virtual Camera"
+!define PRODUCT_VERSION "1.0"
+!define PRODUCT_PUBLISHER "Sacrament Software"
+!define PRODUCT_WEB_SITE "https://github.com/sacrament"
+!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+!define PRODUCT_UNINST_ROOT_KEY "HKLM"
+
+!include "MUI2.nsh"
+!include "x64.nsh"
+
+Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
+OutFile "SacramentVirtualCamera_Setup.exe"
+InstallDir "$PROGRAMFILES64\Sacrament Virtual Camera"
+InstallDirRegKey HKLM "Software\${PRODUCT_NAME}" ""
+RequestExecutionLevel admin
+ShowInstDetails show
+ShowUnInstDetails show
+
+; MUI Settings
+!define MUI_ABORTWARNING
+!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
+!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
+
+; Welcome page
+!insertmacro MUI_PAGE_WELCOME
+; License page
+!insertmacro MUI_PAGE_LICENSE "LICENSE.txt"
+; Directory page
+!insertmacro MUI_PAGE_DIRECTORY
+; Instfiles page
+!insertmacro MUI_PAGE_INSTFILES
+; Finish page
+!define MUI_FINISHPAGE_SHOWREADME ""
+!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "The Sacrament Virtual Camera service has been started automatically"
+!insertmacro MUI_PAGE_FINISH
+
+; Uninstaller pages
+!insertmacro MUI_UNPAGE_INSTFILES
+
+; Language files
+!insertmacro MUI_LANGUAGE "English"
+
+; Installer sections
+Section "MainSection" SEC01
+  SetOutPath "$INSTDIR"
+  SetOverwrite ifnewer
+
+  ; Copy all files
+  File "build\bin\Release\SacramentCamera.dll"
+  File "build\bin\Release\SacramentTray.exe"
+  File "build\bin\Release\SacramentService.exe"
+
+  ; Register the DirectShow filter
+  DetailPrint "Registering DirectShow filter..."
+  ExecWait '"$SYSDIR\regsvr32.exe" /s "$INSTDIR\SacramentCamera.dll"' $0
+  ${If} $0 != 0
+    MessageBox MB_OK "Warning: Failed to register DirectShow filter (error $0)"
+  ${EndIf}
+
+  ; Install and start the Windows service
+  DetailPrint "Installing Windows service..."
+  ExecWait '"$INSTDIR\SacramentService.exe" install' $0
+  ${If} $0 == 0
+    DetailPrint "Starting Windows service..."
+    ExecWait '"$INSTDIR\SacramentService.exe" start' $0
+    ${If} $0 != 0
+      MessageBox MB_OK "Warning: Failed to start service (error $0). You may need to start it manually."
+    ${EndIf}
+  ${Else}
+    MessageBox MB_OK "Warning: Failed to install service (error $0)"
+  ${EndIf}
+
+  ; Create start menu shortcuts
+  CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
+  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Sacrament Virtual Camera.lnk" "$INSTDIR\SacramentTray.exe"
+  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk" "$INSTDIR\uninst.exe"
+
+SectionEnd
+
+Section -AdditionalIcons
+  WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
+  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
+SectionEnd
+
+Section -Post
+  WriteUninstaller "$INSTDIR\uninst.exe"
+  WriteRegStr HKLM "Software\${PRODUCT_NAME}" "" "$INSTDIR"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\SacramentTray.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+SectionEnd
+
+; Uninstaller section
+Section Uninstall
+  ; Stop and uninstall the Windows service
+  DetailPrint "Stopping Windows service..."
+  ExecWait '"$INSTDIR\SacramentService.exe" stop' $0
+  Sleep 1000
+
+  DetailPrint "Uninstalling Windows service..."
+  ExecWait '"$INSTDIR\SacramentService.exe" uninstall' $0
+
+  ; Stop the tray application if still running
+  DetailPrint "Stopping Sacrament Virtual Camera..."
+  ExecWait 'taskkill /F /IM SacramentTray.exe' $0
+  Sleep 500
+
+  ; Unregister the DirectShow filter
+  DetailPrint "Unregistering DirectShow filter..."
+  ExecWait '"$SYSDIR\regsvr32.exe" /u /s "$INSTDIR\SacramentCamera.dll"' $0
+
+  ; Delete files
+  Delete "$INSTDIR\SacramentCamera.dll"
+  Delete "$INSTDIR\SacramentTray.exe"
+  Delete "$INSTDIR\SacramentService.exe"
+  Delete "$INSTDIR\uninst.exe"
+  Delete "$INSTDIR\${PRODUCT_NAME}.url"
+
+  ; Delete shortcuts
+  Delete "$SMPROGRAMS\${PRODUCT_NAME}\Sacrament Virtual Camera.lnk"
+  Delete "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk"
+  Delete "$SMPROGRAMS\${PRODUCT_NAME}\Website.lnk"
+  RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
+
+  ; Delete installation directory
+  RMDir "$INSTDIR"
+
+  ; Delete registry keys
+  DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
+  DeleteRegKey HKLM "Software\${PRODUCT_NAME}"
+  DeleteRegKey HKCU "SOFTWARE\Sacrament\VirtualCamera"
+  DeleteRegKey HKCU "SOFTWARE\Sacrament"
+
+  ; Delete DirectShow registration
+  DeleteRegKey HKLM "SOFTWARE\Classes\CLSID\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+  DeleteRegKey HKLM "SOFTWARE\Classes\CLSID\{860BB310-5D01-11d0-BD3B-00A0C911CE86}\Instance\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+
+  SetAutoClose true
+SectionEnd
+
+Function un.onUninstSuccess
+  HideWindow
+  MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) was successfully removed from your computer."
+FunctionEnd
+
+Function un.onInit
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure you want to completely remove $(^Name) and all of its components?" IDYES +2
+  Abort
+FunctionEnd

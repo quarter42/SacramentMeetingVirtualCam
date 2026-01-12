@@ -1,0 +1,53 @@
+NEXT DIAGNOSTIC STEP - Run Test Connection Program
+====================================================
+
+The test_connect.cpp program has been created and build_test.bat has been updated.
+This test will force DirectShow to actually connect to your camera and attempt to
+start the graph, which will show us exactly where the connection is failing.
+
+INSTRUCTIONS:
+-------------
+
+1. Open "x64 Native Tools Command Prompt for VS 2022" (or your VS version)
+   - Search in Start Menu for "x64 Native Tools"
+
+2. Navigate to the project directory:
+   cd c:\apps\sacrament_graphic_cam
+
+3. Run the build and test:
+   build_test.bat
+
+4. Keep DebugView running while the test executes to see debug output
+
+WHAT THIS TEST WILL SHOW:
+--------------------------
+
+If successful, you'll see output like:
+  - "Created Sacrament filter successfully"
+  - "Added filter to graph"
+  - "Found output pin, rendering..."
+  - "SUCCESS: Stream rendered!"
+  - "Graph running! Press Enter to stop..."
+
+If it fails, you'll see exactly which step failed with an error code like:
+  - "Failed to create Sacrament filter (0x80040154)" - Filter not registered
+  - "Failed to render stream (0x80040217)" - No media types match
+  - "Failed to run graph (0x########)" - Some other DirectShow error
+
+The DebugView output will show which methods get called:
+  - If you see "GetMediaType called" - good, format negotiation is happening
+  - If you see "DecideBufferSize called" - good, connection is being established
+  - If you see "OnThreadCreate called" - excellent, streaming thread starting
+  - If you see "FillBuffer called" - SUCCESS! Frames are being requested
+
+EXPECTED OUTCOME:
+-----------------
+
+This test will reveal the exact failure point and error code, which will tell us
+whether it's:
+  - A media type mismatch issue
+  - A missing DirectShow interface
+  - A pin connection negotiation problem
+  - Something else blocking the connection
+
+Once we see the results, we'll know exactly what to fix.
