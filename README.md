@@ -173,17 +173,9 @@ sacrament_graphic_cam/
 - Verify DirectShow base classes are built
 - Check that you're using Visual Studio Developer Command Prompt
 
-## Future Enhancements
-
-- Windows Service support (currently runs as executable)
-- Multiple image support with rotation
-- Animated GIF support
-- Command-line interface for automation
-- Configuration file for default image
-
 ## License
 
-This project is provided as-is for educational and testing purposes.
+This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
 ## Notes
 
