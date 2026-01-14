@@ -57,7 +57,13 @@ bool TrayApp::Initialize(HINSTANCE hInstance)
     m_nid.uID = 1;
     m_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     m_nid.uCallbackMessage = WM_TRAYICON;
-    m_nid.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+    // Load icon from resources
+    m_nid.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
+    if (!m_nid.hIcon)
+    {
+        // Fallback to default icon if custom icon fails to load
+        m_nid.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+    }
     wcscpy_s(m_nid.szTip, L"Sacrament Virtual Camera");
 
     Shell_NotifyIcon(NIM_ADD, &m_nid);

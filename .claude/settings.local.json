@@ -7,7 +7,15 @@
       "Bash(cmd /c \"cd /d c:\\\\apps\\\\sacrament_graphic_cam && cl /EHsc /nologo test_connect.cpp strmiids.lib ole32.lib quartz.lib\")",
       "Bash(where:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(gh --version:*)",
+      "Bash(gh release create:*)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" release create v1.0.0 SacramentVirtualCamera_Setup.exe --title \"Sacrament Virtual Camera v1.0.0\" --notes \"$\\(cat <<''EOF''\n# Sacrament Virtual Camera v1.0.0\n\nFirst official release of Sacrament Virtual Camera - a Windows DirectShow virtual camera that displays static images \\(PNG/JPG\\) in video conferencing applications.\n\n## Features\n\n- ✨ **DirectShow Virtual Camera** - Compatible with Zoom, Microsoft Teams, OBS Studio, VLC, and any DirectShow-compatible application\n- 🖼️ **Image Display** - Shows PNG or JPG images as your camera feed\n- 🔄 **Horizontal Mirror** - Flip images horizontally \\(useful for apps like Zoom that mirror video\\)\n- 🎯 **HD Output** - 1280x720 \\(16:9\\) resolution at 30 fps\n- 🎨 **High-Quality Scaling** - Bicubic interpolation with aspect ratio preservation\n- 🪟 **Windows Service** - Auto-starts on boot\n- 🎛️ **System Tray Control** - Easy image selection and mirror toggle\n- 📦 **Professional Installer** - Complete installation and clean uninstallation\n\n## Installation\n\n1. Download \\\\`SacramentVirtualCamera_Setup.exe\\\\`\n2. Run the installer as Administrator\n3. The service will start automatically\n4. Look for the camera icon in your system tray\n\n## Usage\n\n### Setting an Image\n- Right-click the system tray icon\n- Select \"Load Image...\"\n- Choose a PNG or JPG file\n- Restart your video application to see the change\n\n### Mirroring the Image\n- Right-click the system tray icon\n- Select \"Mirror Horizontal\" to toggle\n- Restart your video application to see the change\n\n### Using in Applications\n- Open your video conferencing app \\(Zoom, Teams, etc.\\)\n- Go to video settings\n- Select \"Sacrament Virtual Camera\" as your camera\n\n## System Requirements\n\n- Windows 10 or later \\(64-bit\\)\n- Visual C++ Redistributable 2019 or later \\(usually already installed\\)\n\n## Building from Source\n\nSee BUILD_INSTALLER.md for detailed build instructions.\n\n## Technical Details\n\n- **DirectShow Filter** with IAMStreamConfig and IKsPropertySet interfaces\n- **Media Foundation** compatibility via Frame Server mode\n- **Registry-based** configuration \\(HKCU\\\\SOFTWARE\\\\Sacrament\\\\VirtualCamera\\)\n- **GDI+** image loading with high-quality scaling\n\n## Uninstalling\n\nUse Windows Settings → Apps → Installed apps, or run the uninstaller from the Start Menu.\n\n## License\n\nMIT License - See LICENSE.txt\n\n---\n\nBuilt with ❤️ using C++ and DirectShow\nEOF\n\\)\")"
     ]
   }
 }

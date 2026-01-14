@@ -43,9 +43,6 @@ _deps/
 # Allow the installer executable (we'll add it as a release)
 !SacramentVirtualCamera_Setup.exe
 
-# Icon file (user should add their own)
-src/app.ico
-
 # Temporary files
 *.tmp
 *.temp

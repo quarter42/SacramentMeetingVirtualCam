@@ -19,11 +19,11 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Sacrament"
-            VALUE "FileDescription", "Sacrament Virtual Camera"
+            VALUE "FileDescription", "Sacrament Virtual Camera Service"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "InternalName", "SacramentTray"
+            VALUE "InternalName", "SacramentService"
             VALUE "LegalCopyright", "Copyright (C) 2026"
-            VALUE "OriginalFilename", "SacramentTray.exe"
+            VALUE "OriginalFilename", "SacramentService.exe"
             VALUE "ProductName", "Sacrament Virtual Camera"
             VALUE "ProductVersion", "1.0.0.0"
         END

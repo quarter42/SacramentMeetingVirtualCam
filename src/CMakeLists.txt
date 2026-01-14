@@ -118,6 +118,7 @@ target_link_libraries(SacramentTray
 # Windows Service executable
 add_executable(SacramentService
     SacramentService.cpp
+    service_resource.rc
 )
 
 # Add Unicode definitions for the service

@@ -28,11 +28,14 @@ ShowUnInstDetails show
 !insertmacro MUI_PAGE_WELCOME
 ; License page
 !insertmacro MUI_PAGE_LICENSE "LICENSE.txt"
+; Components page
+!insertmacro MUI_PAGE_COMPONENTS
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES
 ; Finish page
+!define MUI_FINISHPAGE_REBOOTLATER_DEFAULT
 !define MUI_FINISHPAGE_SHOWREADME ""
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "The Sacrament Virtual Camera service has been started automatically"
@@ -81,6 +84,15 @@ Section "MainSection" SEC01
 
 SectionEnd
 
+; Optional startup section
+Section "Run on Windows Startup" SEC02
+  ; Create startup shortcut for current user
+  CreateShortCut "$SMSTARTUP\Sacrament Virtual Camera.lnk" "$INSTDIR\SacramentTray.exe"
+
+  ; Set flag to prompt for restart
+  WriteRegStr HKLM "Software\${PRODUCT_NAME}" "StartupAdded" "1"
+SectionEnd
+
 Section -AdditionalIcons
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
@@ -95,7 +107,22 @@ Section -Post
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+
+  ; Check if startup was added and prompt for restart if needed
+  ReadRegStr $0 HKLM "Software\${PRODUCT_NAME}" "StartupAdded"
+  ${If} $0 == "1"
+    ; Clear the flag
+    DeleteRegValue HKLM "Software\${PRODUCT_NAME}" "StartupAdded"
+    ; Set reboot flag
+    SetRebootFlag true
+  ${EndIf}
 SectionEnd
+
+; Section descriptions
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "Installs the Sacrament Virtual Camera application, DirectShow filter, and Windows service."
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "Automatically starts the virtual camera when Windows boots. Requires a restart to take effect."
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ; Uninstaller section
 Section Uninstall
@@ -127,6 +154,7 @@ Section Uninstall
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\Sacrament Virtual Camera.lnk"
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk"
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\Website.lnk"
+  Delete "$SMSTARTUP\Sacrament Virtual Camera.lnk"
   RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
 
   ; Delete installation directory
