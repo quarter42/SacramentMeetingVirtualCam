@@ -132,6 +132,11 @@ SectionEnd
 
 ; Uninstaller section
 Section Uninstall
+  ; Warn user to close applications using the camera
+  MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "Please close all applications using the virtual camera (Zoom, Teams, OBS, etc.) before continuing.$\n$\nClick OK to continue or Cancel to abort." IDOK continue
+  Abort
+
+  continue:
   ; Stop and uninstall the Windows service first
   DetailPrint "Stopping Windows service..."
   ExecWait '"$INSTDIR\SacramentService.exe" stop' $0
@@ -164,29 +169,64 @@ Section Uninstall
 
   ; Unregister the DirectShow filter
   DetailPrint "Unregistering DirectShow filter..."
+  ClearErrors
   ExecWait '"$SYSDIR\regsvr32.exe" /u /s "$INSTDIR\SacramentCamera.dll"' $0
+  ${If} $0 != 0
+    ; Unregistration failed - likely in use
+    MessageBox MB_YESNO|MB_ICONQUESTION "The DirectShow filter could not be unregistered (it may be in use by another application).$\n$\nWould you like to schedule it for removal after reboot?" IDYES scheduleReboot IDNO skipReboot
+
+    scheduleReboot:
+    ; Mark files for deletion on reboot
+    Delete /REBOOTOK "$INSTDIR\SacramentCamera.dll"
+    SetRebootFlag true
+    Goto afterUnreg
+
+    skipReboot:
+    ; Try to delete anyway
+    Goto afterUnreg
+  ${EndIf}
+
+  afterUnreg:
   Sleep 500
 
-  ; Delete files (with retries if locked)
+  ; Delete files (with retries if locked, schedule for reboot if still locked)
   ClearErrors
   Delete "$INSTDIR\SacramentCamera.dll"
   ${If} ${Errors}
     Sleep 1000
+    ClearErrors
     Delete "$INSTDIR\SacramentCamera.dll"
+    ${If} ${Errors}
+      ; Still locked, schedule for reboot
+      Delete /REBOOTOK "$INSTDIR\SacramentCamera.dll"
+      SetRebootFlag true
+    ${EndIf}
   ${EndIf}
 
   ClearErrors
   Delete "$INSTDIR\SacramentTray.exe"
   ${If} ${Errors}
     Sleep 1000
+    ClearErrors
     Delete "$INSTDIR\SacramentTray.exe"
+    ${If} ${Errors}
+      ; Still locked, schedule for reboot
+      Delete /REBOOTOK "$INSTDIR\SacramentTray.exe"
+      SetRebootFlag true
+    ${EndIf}
   ${EndIf}
 
   ClearErrors
   Delete "$INSTDIR\SacramentService.exe"
   ${If} ${Errors}
     Sleep 1000
+    ClearErrors
     Delete "$INSTDIR\SacramentService.exe"
+    ${If} ${Errors}
+      ; Still locked, schedule for reboot
+      Delete /REBOOTOK "$INSTDIR\SacramentService.exe"
+      SetRebootFlag true
+    ${EndIf}
   ${EndIf}
 
   Delete "$INSTDIR\uninst.exe"
@@ -217,7 +257,13 @@ SectionEnd
 
 Function un.onUninstSuccess
   HideWindow
-  MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) was successfully removed from your computer."
+  ; Check if reboot is needed
+  IfRebootFlag 0 noReboot
+    MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) will be completely removed after you restart your computer."
+    Goto done
+  noReboot:
+    MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) was successfully removed from your computer."
+  done:
 FunctionEnd
 
 Function un.onInit
