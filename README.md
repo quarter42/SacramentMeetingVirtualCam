@@ -6,9 +6,12 @@ A Windows application that creates a virtual camera device named "Sacrament" whi
 
 - Creates a virtual camera device named "Sacrament"
 - Displays a static image (PNG or JPG) as the camera feed
+- **Default sacrament image included** - works immediately after installation
 - System tray application for easy management
+- Sample images provided for quick setup
 - No audio feed (video only)
 - Easy image loading through tray menu
+- Horizontal mirror/flip support
 
 ## Prerequisites
 
@@ -85,13 +88,22 @@ The DirectShow Base Classes are required to build this project. They are include
 3. The application will:
    - Register the Sacrament virtual camera
    - Run in the system tray (look for the icon near the clock)
+   - **Automatically display the default sacrament image**
 
-### Loading an Image
+### Default Image
+
+The virtual camera comes with a default sacrament image that displays immediately after installation. No configuration is needed to start using the camera right away!
+
+Sample images are located in the installation directory under `SampleImages\`:
+- `sacrament being administered.png` (default)
+- `sacrament being administered Tucson Temple.jpeg`
+
+### Loading a Custom Image
 
 1. Right-click the tray icon
 2. Select "Load Image..."
 3. Choose a PNG or JPG file
-4. The virtual camera will now display this image
+4. The virtual camera will now display your custom image
 
 ### Using the Virtual Camera
 

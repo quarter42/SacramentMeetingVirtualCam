@@ -62,6 +62,15 @@ Section "MainSection" SEC01
   File "build\bin\Release\SacramentTray.exe"
   File "build\bin\Release\SacramentService.exe"
 
+  ; Create SampleImages directory and copy sample images
+  CreateDirectory "$INSTDIR\SampleImages"
+  SetOutPath "$INSTDIR\SampleImages"
+  File "SampleImages\sacrament being administered.png"
+  File "SampleImages\sacrament being administered Tucson Temple.jpeg"
+
+  ; Reset output path
+  SetOutPath "$INSTDIR"
+
   ; Register the DirectShow filter
   DetailPrint "Registering DirectShow filter..."
   ExecWait '"$SYSDIR\regsvr32.exe" /s "$INSTDIR\SacramentCamera.dll"' $0
@@ -231,6 +240,11 @@ Section Uninstall
 
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
+
+  ; Delete sample images
+  Delete "$INSTDIR\SampleImages\sacrament being administered.png"
+  Delete "$INSTDIR\SampleImages\sacrament being administered Tucson Temple.jpeg"
+  RMDir "$INSTDIR\SampleImages"
 
   ; Delete shortcuts
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\Sacrament Virtual Camera.lnk"

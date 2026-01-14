@@ -247,7 +247,36 @@ HRESULT CVirtualCameraPin::OnThreadCreate()
         }
         else
         {
-            OutputDebugStringW(L"Sacrament: No ImagePath in registry, using test pattern\n");
+            OutputDebugStringW(L"Sacrament: No ImagePath in registry, trying default image\n");
+
+            // Try to load default image from installation directory
+            wchar_t defaultImagePath[MAX_PATH];
+            wchar_t modulePath[MAX_PATH];
+
+            if (GetModuleFileNameW(NULL, modulePath, MAX_PATH) > 0)
+            {
+                // Get the directory of the executable
+                wchar_t* lastSlash = wcsrchr(modulePath, L'\\');
+                if (lastSlash != nullptr)
+                {
+                    *lastSlash = L'\0';
+                    wsprintfW(defaultImagePath, L"%s\\SampleImages\\sacrament being administered.png", modulePath);
+
+                    wchar_t buf[512];
+                    wsprintfW(buf, L"Sacrament: Trying default image: %s\n", defaultImagePath);
+                    OutputDebugStringW(buf);
+
+                    HRESULT hr = LoadImage(defaultImagePath);
+                    if (SUCCEEDED(hr))
+                    {
+                        OutputDebugStringW(L"Sacrament: Default image loaded successfully\n");
+                    }
+                    else
+                    {
+                        OutputDebugStringW(L"Sacrament: Failed to load default image, using test pattern\n");
+                    }
+                }
+            }
         }
 
         // Read mirror setting
