@@ -107,9 +107,9 @@ Sample images are located in the installation directory under `SampleImages\`:
 
 ### Using the Virtual Camera
 
-1. Open any application that uses a webcam (Zoom, Teams, OBS, etc.)
-2. Select "Sacrament" as your camera device
-3. The static image will be displayed as your camera feed
+1. When the sacrament is being administered, open your video conferencing application (Zoom, Teams, etc.)
+2. Switch your camera to "Sacrament Virtual Camera"
+3. The static image will be displayed as your camera feed during the sacrament
 
 ### Stopping the Application
 
@@ -156,7 +156,7 @@ sacrament_graphic_cam/
 
 ### Camera Specifications
 
-- **Name**: Sacrament
+- **Name**: Sacrament Virtual Camera
 - **Video Format**: RGB24
 - **Default Resolution**: 640x480 (adjusts to loaded image)
 - **Frame Rate**: 30 fps

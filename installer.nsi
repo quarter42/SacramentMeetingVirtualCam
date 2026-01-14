@@ -176,8 +176,23 @@ Section Uninstall
   ExecWait 'taskkill /F /IM SacramentService.exe' $0
   Sleep 1000
 
-  ; Unregister the DirectShow filter
-  DetailPrint "Unregistering DirectShow filter..."
+  ; Delete DirectShow registration FIRST (before unregistering DLL)
+  ; This prevents the registry from being recreated
+  DetailPrint "Removing DirectShow registry entries..."
+
+  ; Delete from all possible registry locations
+  DeleteRegKey HKLM "SOFTWARE\Classes\CLSID\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+  DeleteRegKey HKLM "SOFTWARE\Classes\CLSID\{860BB310-5D01-11d0-BD3B-00A0C911CE86}\Instance\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+  DeleteRegKey HKLM "SOFTWARE\WOW6432Node\Classes\CLSID\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+  DeleteRegKey HKLM "SOFTWARE\WOW6432Node\Classes\CLSID\{860BB310-5D01-11d0-BD3B-00A0C911CE86}\Instance\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+  DeleteRegKey HKCR "CLSID\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+  DeleteRegKey HKCR "CLSID\{860BB310-5D01-11d0-BD3B-00A0C911CE86}\Instance\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+  DeleteRegKey HKLM "SOFTWARE\Classes\Filter\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+  DeleteRegKey HKLM "SOFTWARE\WOW6432Node\Classes\Filter\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+  DeleteRegKey HKCR "Filter\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
+
+  ; Unregister the DirectShow filter DLL
+  DetailPrint "Unregistering DirectShow filter DLL..."
   ClearErrors
   ExecWait '"$SYSDIR\regsvr32.exe" /u /s "$INSTDIR\SacramentCamera.dll"' $0
   ${If} $0 != 0
@@ -256,15 +271,11 @@ Section Uninstall
   ; Delete installation directory
   RMDir "$INSTDIR"
 
-  ; Delete registry keys
+  ; Delete registry keys (DirectShow keys already deleted earlier)
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "Software\${PRODUCT_NAME}"
   DeleteRegKey HKCU "SOFTWARE\Sacrament\VirtualCamera"
   DeleteRegKey HKCU "SOFTWARE\Sacrament"
-
-  ; Delete DirectShow registration
-  DeleteRegKey HKLM "SOFTWARE\Classes\CLSID\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
-  DeleteRegKey HKLM "SOFTWARE\Classes\CLSID\{860BB310-5D01-11d0-BD3B-00A0C911CE86}\Instance\{4F8B3A50-1E5D-4E3A-8F2B-1234567890AB}"
 
   SetAutoClose true
 SectionEnd

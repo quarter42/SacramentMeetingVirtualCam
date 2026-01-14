@@ -71,6 +71,9 @@ bool TrayApp::Initialize(HINSTANCE hInstance)
     // Register the camera filter
     RegisterCameraFilter();
 
+    // Check if this is first run (no image configured)
+    CheckFirstRun();
+
     return true;
 }
 
@@ -193,6 +196,19 @@ void TrayApp::LoadImage()
 {
     OPENFILENAME ofn = { 0 };
     wchar_t szFile[MAX_PATH] = { 0 };
+    wchar_t szInitialDir[MAX_PATH] = { 0 };
+
+    // Get the installation directory and append SampleImages
+    wchar_t modulePath[MAX_PATH];
+    if (GetModuleFileNameW(NULL, modulePath, MAX_PATH) > 0)
+    {
+        wchar_t* lastSlash = wcsrchr(modulePath, L'\\');
+        if (lastSlash != nullptr)
+        {
+            *lastSlash = L'\0';
+            wsprintfW(szInitialDir, L"%s\\SampleImages", modulePath);
+        }
+    }
 
     ofn.lStructSize = sizeof(OPENFILENAME);
     ofn.hwndOwner = m_hwnd;
@@ -202,6 +218,7 @@ void TrayApp::LoadImage()
     ofn.nFilterIndex = 1;
     ofn.lpstrTitle = L"Select Image for Virtual Camera";
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+    ofn.lpstrInitialDir = szInitialDir;  // Set initial directory to SampleImages
 
     if (GetOpenFileName(&ofn))
     {
@@ -366,6 +383,40 @@ void TrayApp::ShowAbout()
         L"Camera Name: Sacrament",
         L"About Sacrament Virtual Camera",
         MB_OK | MB_ICONINFORMATION);
+}
+
+void TrayApp::CheckFirstRun()
+{
+    HKEY hKey;
+    LONG lResult = RegOpenKeyExW(HKEY_CURRENT_USER,
+        L"SOFTWARE\\Sacrament\\VirtualCamera", 0, KEY_READ, &hKey);
+
+    if (lResult == ERROR_SUCCESS)
+    {
+        wchar_t imagePath[MAX_PATH];
+        DWORD dwSize = sizeof(imagePath);
+        DWORD dwType;
+
+        lResult = RegQueryValueExW(hKey, L"ImagePath", NULL, &dwType,
+            (LPBYTE)imagePath, &dwSize);
+        RegCloseKey(hKey);
+
+        if (lResult == ERROR_SUCCESS && wcslen(imagePath) > 0)
+        {
+            // Image already configured, not first run
+            return;
+        }
+    }
+
+    // First run - prompt user to select an image
+    MessageBox(m_hwnd,
+        L"Welcome to Sacrament Virtual Camera!\n\n"
+        L"Please select an image to display in your virtual camera.\n\n"
+        L"Sample sacrament images are provided in the next dialog.",
+        L"First Time Setup",
+        MB_ICONINFORMATION | MB_OK);
+
+    LoadImage();
 }
 
 bool TrayApp::RegisterCameraFilter()

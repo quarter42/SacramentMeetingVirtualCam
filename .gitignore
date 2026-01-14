@@ -40,8 +40,8 @@ _deps/
 *.log
 *.tlog
 
-# Allow the installer executable (we'll add it as a release)
-!SacramentVirtualCamera_Setup.exe
+# Allow the installer executables (we'll add them as releases)
+!SacramentVirtualCamera_Setup*.exe
 
 # Temporary files
 *.tmp

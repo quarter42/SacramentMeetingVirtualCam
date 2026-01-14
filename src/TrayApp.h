@@ -29,6 +29,7 @@ private:
     void ToggleMirror();
     bool IsMirrorEnabled();
     void ShowAbout();
+    void CheckFirstRun();
     bool RegisterCameraFilter();
     void UnregisterCameraFilter();
 
