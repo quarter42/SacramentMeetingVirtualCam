@@ -132,27 +132,63 @@ SectionEnd
 
 ; Uninstaller section
 Section Uninstall
-  ; Stop and uninstall the Windows service
+  ; Stop and uninstall the Windows service first
   DetailPrint "Stopping Windows service..."
   ExecWait '"$INSTDIR\SacramentService.exe" stop' $0
+  Sleep 2000
+
+  ; Force stop the service using sc command as backup
+  ExecWait 'sc stop SacramentVirtualCamera' $0
   Sleep 1000
 
   DetailPrint "Uninstalling Windows service..."
   ExecWait '"$INSTDIR\SacramentService.exe" uninstall' $0
+  Sleep 1000
 
-  ; Stop the tray application if still running
-  DetailPrint "Stopping Sacrament Virtual Camera..."
-  ExecWait 'taskkill /F /IM SacramentTray.exe' $0
+  ; Force delete the service using sc command as backup
+  ExecWait 'sc delete SacramentVirtualCamera' $0
   Sleep 500
+
+  ; Stop the tray application if still running (try multiple times)
+  DetailPrint "Stopping Sacrament Virtual Camera tray application..."
+  ExecWait 'taskkill /F /IM SacramentTray.exe' $0
+  Sleep 1000
+
+  ; Try again to ensure it's really stopped
+  ExecWait 'taskkill /F /IM SacramentTray.exe' $0
+  Sleep 1000
+
+  ; Also kill the service executable if it's still running
+  ExecWait 'taskkill /F /IM SacramentService.exe' $0
+  Sleep 1000
 
   ; Unregister the DirectShow filter
   DetailPrint "Unregistering DirectShow filter..."
   ExecWait '"$SYSDIR\regsvr32.exe" /u /s "$INSTDIR\SacramentCamera.dll"' $0
+  Sleep 500
 
-  ; Delete files
+  ; Delete files (with retries if locked)
+  ClearErrors
   Delete "$INSTDIR\SacramentCamera.dll"
+  ${If} ${Errors}
+    Sleep 1000
+    Delete "$INSTDIR\SacramentCamera.dll"
+  ${EndIf}
+
+  ClearErrors
   Delete "$INSTDIR\SacramentTray.exe"
+  ${If} ${Errors}
+    Sleep 1000
+    Delete "$INSTDIR\SacramentTray.exe"
+  ${EndIf}
+
+  ClearErrors
   Delete "$INSTDIR\SacramentService.exe"
+  ${If} ${Errors}
+    Sleep 1000
+    Delete "$INSTDIR\SacramentService.exe"
+  ${EndIf}
+
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
 
