@@ -254,9 +254,10 @@ HRESULT CVirtualCameraPin::OnThreadCreate()
             wchar_t modulePath[MAX_PATH];
 
             // Get the path of THIS DLL (SacramentCamera.dll), not the host application
+            // Use the address of this object which is allocated in the DLL
             HMODULE hModule = NULL;
             if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                                   (LPCWSTR)&CVirtualCameraPin::OnThreadCreate, &hModule) && hModule)
+                                   (LPCWSTR)this, &hModule) && hModule)
             {
                 if (GetModuleFileNameW(hModule, modulePath, MAX_PATH) > 0)
                 {
