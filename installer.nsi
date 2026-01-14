@@ -47,8 +47,13 @@ ShowUnInstDetails show
 ; Language files
 !insertmacro MUI_LANGUAGE "English"
 
+; Default section selection - select startup by default
+InstType "Full"
+InstType "Minimal"
+
 ; Installer sections
 Section "MainSection" SEC01
+  SectionIn 1 2 RO
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
 
@@ -84,8 +89,9 @@ Section "MainSection" SEC01
 
 SectionEnd
 
-; Optional startup section
+; Optional startup section (checked by default)
 Section "Run on Windows Startup" SEC02
+  SectionIn 1
   ; Create startup shortcut for current user
   CreateShortCut "$SMSTARTUP\Sacrament Virtual Camera.lnk" "$INSTDIR\SacramentTray.exe"
 
