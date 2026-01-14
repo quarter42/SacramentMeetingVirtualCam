@@ -253,29 +253,42 @@ HRESULT CVirtualCameraPin::OnThreadCreate()
             wchar_t defaultImagePath[MAX_PATH];
             wchar_t modulePath[MAX_PATH];
 
-            if (GetModuleFileNameW(NULL, modulePath, MAX_PATH) > 0)
+            // Get the path of THIS DLL (SacramentCamera.dll), not the host application
+            HMODULE hModule = NULL;
+            if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                                   (LPCWSTR)&CVirtualCameraPin::OnThreadCreate, &hModule) && hModule)
             {
-                // Get the directory of the executable
-                wchar_t* lastSlash = wcsrchr(modulePath, L'\\');
-                if (lastSlash != nullptr)
+                if (GetModuleFileNameW(hModule, modulePath, MAX_PATH) > 0)
                 {
-                    *lastSlash = L'\0';
-                    wsprintfW(defaultImagePath, L"%s\\SampleImages\\sacrament being administered.png", modulePath);
-
                     wchar_t buf[512];
-                    wsprintfW(buf, L"Sacrament: Trying default image: %s\n", defaultImagePath);
+                    wsprintfW(buf, L"Sacrament: DLL path: %s\n", modulePath);
                     OutputDebugStringW(buf);
 
-                    HRESULT hr = LoadImage(defaultImagePath);
-                    if (SUCCEEDED(hr))
+                    // Get the directory of the DLL
+                    wchar_t* lastSlash = wcsrchr(modulePath, L'\\');
+                    if (lastSlash != nullptr)
                     {
-                        OutputDebugStringW(L"Sacrament: Default image loaded successfully\n");
-                    }
-                    else
-                    {
-                        OutputDebugStringW(L"Sacrament: Failed to load default image, using test pattern\n");
+                        *lastSlash = L'\0';
+                        wsprintfW(defaultImagePath, L"%s\\SampleImages\\sacrament being administered.png", modulePath);
+
+                        wsprintfW(buf, L"Sacrament: Trying default image: %s\n", defaultImagePath);
+                        OutputDebugStringW(buf);
+
+                        HRESULT hr = LoadImage(defaultImagePath);
+                        if (SUCCEEDED(hr))
+                        {
+                            OutputDebugStringW(L"Sacrament: Default image loaded successfully\n");
+                        }
+                        else
+                        {
+                            OutputDebugStringW(L"Sacrament: Failed to load default image, using test pattern\n");
+                        }
                     }
                 }
+            }
+            else
+            {
+                OutputDebugStringW(L"Sacrament: Failed to get DLL module handle\n");
             }
         }
 
