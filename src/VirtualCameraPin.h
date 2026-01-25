@@ -21,6 +21,7 @@ private:
 
     CCritSec m_cSharedState;
     IReferenceClock* m_pClock;
+    REFERENCE_TIME m_rtStreamStartTime;
 
 public:
     CVirtualCameraPin(HRESULT* phr, CSource* pFilter);

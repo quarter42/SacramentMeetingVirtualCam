@@ -12,7 +12,8 @@ CVirtualCameraPin::CVirtualCameraPin(HRESULT* phr, CSource* pFilter)
       m_iImageWidth(1280),  // Changed from 640 to 1280 for better quality
       m_iImageHeight(720),  // Changed from 480 to 720 for 16:9 aspect ratio
       m_bMirrorHorizontal(false),
-      m_pClock(nullptr)
+      m_pClock(nullptr),
+      m_rtStreamStartTime(0)
 {
     OutputDebugStringW(L"Sacrament: Pin constructor called\n");
 }
@@ -23,6 +24,11 @@ CVirtualCameraPin::~CVirtualCameraPin()
     {
         delete[] m_pImageData;
         m_pImageData = nullptr;
+    }
+    if (m_pClock)
+    {
+        m_pClock->Release();
+        m_pClock = nullptr;
     }
 }
 
@@ -60,6 +66,12 @@ HRESULT CVirtualCameraPin::FillBuffer(IMediaSample* pSample)
         OutputDebugStringW(L"Sacrament: FillBuffer called for first time\n");
         firstCall = false;
     }
+
+    // Frame pacing: Wait to deliver frames at the correct rate
+    // This prevents spinning the CPU at 100% generating frames as fast as possible
+    // Use simple Sleep-based timing which is sufficient for a static image camera
+    // Sleep for approximately one frame duration (~33ms for 30fps)
+    Sleep(33);
 
     BYTE* pData;
     HRESULT hr = pSample->GetPointer(&pData);
@@ -102,12 +114,23 @@ HRESULT CVirtualCameraPin::FillBuffer(IMediaSample* pSample)
     }
     else
     {
-        // No image loaded, fill with bright colors to ensure visibility
+        // No image loaded, fill with magenta using memset for efficiency
         long lDataLen = pSample->GetSize();
 
-        // Fill the entire buffer with a bright color (magenta/purple)
-        // RGB24: Blue, Green, Red
-        for (long i = 0; i < lDataLen; i += 3)
+        // Fill with magenta pattern (BGR: 255, 0, 255)
+        // Use a pre-filled pattern and copy it efficiently
+        static bool patternInitialized = false;
+        static BYTE magentaPattern[12] = { 255, 0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255 };
+
+        // Copy pattern in chunks for efficiency
+        long offset = 0;
+        while (offset + 12 <= lDataLen)
+        {
+            memcpy(pData + offset, magentaPattern, 12);
+            offset += 12;
+        }
+        // Handle remaining bytes
+        for (long i = offset; i < lDataLen; i += 3)
         {
             pData[i] = 255;     // Blue
             pData[i + 1] = 0;   // Green
